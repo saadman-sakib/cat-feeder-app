@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 class FeedPage extends StatefulWidget {
   const FeedPage({super.key, required this.title});
@@ -38,6 +40,22 @@ class _FeedPageState extends State<FeedPage> {
     var response =
         await http.get(Uri.https('some-random-api.ml', 'animal/cat'));
     var jsonData = jsonDecode(response.body);
+
+    try {
+      Socket socket = await Socket.connect('192.168.1.107', 8585);
+
+      socket.add(utf8.encode('{"name": "app", "msg": "feed the cat"}'));
+      await Future.delayed(Duration(seconds: 2));
+      
+      socket.listen((List<int> event) {
+        print(utf8.decode(event));
+      });
+
+      socket.close();
+    } catch (e) {
+        print('error');
+    }
+
 
     setState(() {
       _str = jsonData["fact"];
